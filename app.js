@@ -2,6 +2,7 @@ var express = require('express');
 var BinaryServer = require('binaryjs').BinaryServer;
 var fs = require('fs');
 var wav = require('wav');
+const lame = require( 'lame' );
 const googleSpeechConfig = require( './configs/googleSpeechConfig' );
 // Imports the Google Cloud client library
 const Speech = require('google-cloud/node_modules/@google-cloud/speech');
@@ -41,9 +42,13 @@ binaryServer.on('connection', function(client) {
 
   client.on('stream', function(stream, meta) {
     console.log('new stream');
-    stream.pipe(fileWriter);
+    let streamClone = require( 'stream' );
 
-    stream.on('end', function() {
+    let stream1 = stream.pipe( new streamClone.PassThrough() );
+
+    stream1.pipe(fileWriter);
+
+    stream1.on('end', function() {
       fileWriter.end();
       console.log('wrote to file ' + outFile);
 
@@ -72,6 +77,8 @@ binaryServer.on('connection', function(client) {
 
 
       });
+
+
       // transcode file to mp3
       // upload mp3 to Amazon S3
       // call mongoDB method to POST obj with S3 URL and transcription
