@@ -1,6 +1,7 @@
 var express = require('express');
 var BinaryServer = require('binaryjs').BinaryServer;
 var fs = require('fs');
+const path = require( 'path' );
 var wav = require('wav');
 const lame = require( 'lame' );
 const googleSpeechConfig = require( './configs/googleSpeechConfig' );
@@ -45,6 +46,7 @@ binaryServer.on('connection', function(client) {
     let streamClone = require( 'stream' );
 
     let stream1 = stream.pipe( new streamClone.PassThrough() );
+    let stream2 = stream.pipe( new streamClone.PassThrough() );
 
     stream1.pipe(fileWriter);
 
@@ -74,11 +76,20 @@ binaryServer.on('connection', function(client) {
         }
 
         console.log(`Transcription: ${result}`);
-
-
       });
 
+      stream2
+        .pipe( new lame.Encoder( {
+            channels: 1
+            , bitDepth: 16
+            , float: false
 
+            , bitRate: 192
+            , outSampleRate: 44100
+            , mode: lame.STEREO
+          } ) )
+        .pipe( fs.createWriteStream( path.resolve( __dirname, 'demo.mp3' ) ) )
+        .on( 'close', () => { console.log( 'Done encoding to mp3' ); } );
       // transcode file to mp3
       // upload mp3 to Amazon S3
       // call mongoDB method to POST obj with S3 URL and transcription
