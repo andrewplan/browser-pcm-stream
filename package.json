@@ -8,7 +8,9 @@
   "dependencies": {
     "binaryjs": "latest",
     "express": "latest",
+    "google-cloud": "^0.41.2",
     "jade": "latest",
+    "lame": "^1.2.4",
     "wav": "latest"
   },
   "author": "gabrielpoca"
