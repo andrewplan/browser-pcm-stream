@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Stream microphone pcm data to server and save on wav file.",
   "scripts": {
-    "start": "node app.js"
+    "start": "nodemon app.js"
   },
   "dependencies": {
     "binaryjs": "latest",
