@@ -1,21 +1,22 @@
 var express = require('express');
-var BinaryServer = require('binaryjs').BinaryServer;
+// var BinaryServer = require('binaryjs').BinaryServer;
 var fs = require('fs');
 const path = require( 'path' );
 var wav = require('wav');
 const lame = require( 'lame' );
 const googleSpeechConfig = require( './configs/googleSpeechConfig' );
-// Imports the Google Cloud client library
 const Speech = require('google-cloud/node_modules/@google-cloud/speech');
-
-// Your Google Cloud Platform project ID
 const projectId = googleSpeechConfig.project_id;
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = './configs/googleSpeechCredentials.json';
 
 var port = 3700;
 var outFile = 'demo.wav';
+
 var app = express();
+var http = require( 'http' ).Server( app );
+var io = require( 'socket.io' )( http );
+const ss = require( 'socket.io-stream' );
 
 app.set('views', __dirname + '/tpl');
 app.set('view engine', 'jade');
@@ -26,13 +27,13 @@ app.get('/', function(req, res){
   res.render('index');
 });
 
-app.listen(port, () => { console.log('server open on port ' + port) } );
+http.listen(port, () => { console.log('server open on port ' + port) } );
 
 
+// binaryServer = BinaryServer({port: 9001});
 
-binaryServer = BinaryServer({port: 9001});
-
-binaryServer.on('connection', function(client) {
+// binaryServer.on('connection', function(client) {
+io.on( 'connection', function( socket ) {
   console.log('new connection');
 
   var fileWriter = new wav.FileWriter(outFile, {
@@ -41,8 +42,9 @@ binaryServer.on('connection', function(client) {
     bitDepth: 16
   });
 
-  client.on('stream', function(stream, meta) {
+  ss( socket ).on('stream', function(stream, meta) {
     console.log('new stream');
+    console.log( 'stream is ', stream );
     let streamClone = require( 'stream' );
 
     let stream1 = stream.pipe( new streamClone.PassThrough() );
@@ -50,7 +52,7 @@ binaryServer.on('connection', function(client) {
 
     stream1.pipe(fileWriter);
 
-    stream1.on('end', function() {
+    socket.on('end', function() {
         fileWriter.end();
         console.log('wrote to file ' + outFile);
 
