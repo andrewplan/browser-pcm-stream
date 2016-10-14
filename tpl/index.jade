@@ -2,7 +2,9 @@ doctype
 html
     head
         title= "Stream to Wav"
-        script(src="https://cdn.jsdelivr.net/binaryjs/0.2.1/binary.min.js")
+        script(src="https://cdn.socket.io/socket.io-1.4.5.js")
+        script(src="socket.io-stream.js")
+        script(src="/socket.io/socket.io.js")
     body
         button(onclick="startRecording()") Start Recording
         button(onclick="stopRecording()") Stop Recording

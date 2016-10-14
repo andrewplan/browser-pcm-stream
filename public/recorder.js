@@ -1,8 +1,12 @@
-(function(window) {
-  var client = new BinaryClient('ws://localhost:9001');
+        // script(src="https://cdn.jsdelivr.net/binaryjs/0.2.1/binary.min.js")
 
-  client.on('open', function() {
-    window.Stream = client.createStream();
+
+(function(window) {
+  // var client = new BinaryClient('ws://localhost:9001');
+  var socket = io.connect();
+  var stream = ss.createStream();
+  // client.on('open', function() {
+    // window.Stream = client.createStream();
 
     if (!navigator.getUserMedia)
       navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
@@ -22,10 +26,13 @@
 
     window.stopRecording = function() {
       recording = false;
-      window.Stream.end();
+      // window.Stream.end();
+      stream.end();
+      socket.emit( 'end' );
     }
 
     function success(e) {
+
       audioContext = window.AudioContext || window.webkitAudioContext;
       context = new audioContext();
 
@@ -39,11 +46,13 @@
         if(!recording) return;
         console.log ('recording');
         var left = e.inputBuffer.getChannelData(0);
-        window.Stream.write(convertoFloat32ToInt16(left));
+        // window.Stream.write(convertoFloat32ToInt16(left));
+        var data = stream.write( convertoFloat32ToInt16(left) );
+        ss( socket ).emit( 'stream', data );
       }
 
-      audioInput.connect(recorder)
-      recorder.connect(context.destination); 
+      audioInput.connect(recorder);
+      recorder.connect(context.destination);
     }
 
     function convertoFloat32ToInt16(buffer) {
@@ -55,5 +64,5 @@
       }
       return buf.buffer
     }
-  });
+  // });
 })(this);
